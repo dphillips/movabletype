@@ -165,6 +165,7 @@ BEGIN {
             'filter'          => 'MT::Filter',
             'touch'           => 'MT::Touch',
             'failedlogin'     => 'MT::FailedLogin',
+            'accesstoken'     => 'MT::AccessToken',
 
             # TheSchwartz tables
             'ts_job'        => 'MT::TheSchwartz::Job',
@@ -1723,6 +1724,7 @@ BEGIN {
             'UpgradeScript'         => { default => 'mt-upgrade.cgi', },
             'CheckScript'           => { default => 'mt-check.cgi', },
             'NotifyScript'          => { default => 'mt-add-notify.cgi', },
+            'APIScript'             => { default => 'mt-api.cgi', },
             'PublishCharset'        => { default => 'utf-8', },
             'SafeMode'              => { default => 1, },
             'AllowFileInclude'      => { default => 0, },
@@ -1945,6 +1947,9 @@ BEGIN {
             'FailedLoginExpirationFrequency' => { default => 86400 },
             'LockoutIPWhitelist'             => undef,
             'LockoutNotifyTo'                => undef,
+
+            # API
+            'AccessTokenTTL' => { default => 60 * 60, },
         },
         upgrade_functions => \&load_upgrade_fns,
         applications      => {
@@ -2033,6 +2038,13 @@ BEGIN {
                 methods => '$Core::MT::App::Upgrader::core_methods',
                 script  => sub { MT->config->UpgradeScript },
                 type    => 'run_once',
+            },
+            'api' => {
+                handler   => 'MT::App::API',
+                script    => sub { MT->config->APIScript },
+                methods   => sub { MT->app->core_methods() },
+                endpoints => sub { MT->app->core_endpoints() },
+                resources => sub { MT->app->core_resources() },
             },
         },
         archive_types => \&load_archive_types,
